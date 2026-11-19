@@ -1,0 +1,16 @@
+name: nbgsysclaude-tokens
+kind: model-provider
+version: 0.1.0
+description: "Use a Claude Pro/Max subscription token (sk-ant-oat01-...) with Hermes. Extends the bundled Anthropic provider; adds token validation, onboarding and health checks. Unofficial, not affiliated with Anthropic."
+author: nbgsys
+license: MIT
+homepage: https://github.com/leonmex/hermes-nbgsysclaude-tokens
+tags: [anthropic, claude, oauth, subscription, provider]
+requires_hermes: ">=0.21"
+# Advisory: the plugin also checks at import time that the bundled Anthropic
+# provider is present and stays inert (registers nothing) when it is not.
+requires_plugins:
+  - anthropic-provider
+requires_env: []
+provides_tools: []
+provides_hooks: []

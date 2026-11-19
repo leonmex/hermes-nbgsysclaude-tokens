@@ -1,0 +1,29 @@
+#!/bin/sh
+# 05-ensure-nbgsysclaude-tokens-plugin -- self-heals the nbgsysclaude-tokens plugin.
+#
+# Same protective pattern as a hindsight/bot-forge ensure-plugin hook: bind-mount this file into
+# /etc/cont-init.d/ and it runs on every container start. It reinstalls the plugin from GitHub only
+# when the plugin directory is missing, so it is cheap (a directory check, no network) when present.
+#
+# HERMES_HOME and HOME are pinned on purpose: cont-init.d does NOT carry the environment of a
+# `docker exec -u hermes` session, and without the pin `hermes plugins install` can silently land in
+# the wrong directory and leave the plugin reported as not installed.
+set -eu
+
+export HERMES_HOME="/opt/data"
+export HOME="/opt/data"
+PLUGIN_DIR="$HERMES_HOME/plugins/nbgsysclaude-tokens"
+REPO="leonmex/hermes-nbgsysclaude-tokens"
+
+as_hermes() { [ "$(id -u)" = 0 ] || { "$@"; return; }; s6-setuidgid hermes "$@"; }
+
+if [ -d "$PLUGIN_DIR" ]; then
+    echo "[nbgsysclaude-tokens] present at $PLUGIN_DIR, skipping install."
+else
+    echo "[nbgsysclaude-tokens] missing at $PLUGIN_DIR -- reinstalling from $REPO ..."
+    if as_hermes hermes plugins install "$REPO" --enable; then
+        echo "[nbgsysclaude-tokens] reinstalled successfully."
+    else
+        echo "[nbgsysclaude-tokens] WARNING: reinstall failed -- run manually: docker exec -u hermes <container> hermes plugins install $REPO --enable" >&2
+    fi
+fi

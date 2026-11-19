@@ -1,0 +1,30 @@
+name: ci
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pip install pytest pyyaml tomli
+      - run: python -m pytest
+
+  hermes-validate:
+    # Runs Hermes's own admission checks against the plugin using the published image.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          docker run --rm --entrypoint /bin/sh -v "$PWD":/src:ro nousresearch/hermes-agent:latest -c '
+            export HERMES_HOME=/tmp/hh HOME=/tmp/hh
+            mkdir -p /tmp/hh/plugins && cp -r /src /tmp/hh/plugins/nbgsysclaude-tokens
+            rm -rf /tmp/hh/plugins/nbgsysclaude-tokens/tests
+            hermes plugins validate /tmp/hh/plugins/nbgsysclaude-tokens'

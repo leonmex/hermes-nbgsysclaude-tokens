@@ -1,0 +1,15 @@
+# Tooling configuration only. The plugin has no runtime dependencies: it uses the standard
+# library plus modules that Hermes itself provides at import time.
+[project]
+name = "hermes-nbgsysclaude-tokens"
+version = "0.1.0"
+description = "Claude Pro/Max subscription tokens for Hermes (unofficial)"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# The repo root is itself the plugin package (relative imports). --confcutdir stops pytest walking
+# above tests/, so it never tries to import the root __init__.py as a top-level module (which fails
+# when the checkout directory name is not a valid Python identifier, e.g. in CI).
+addopts = "-q --confcutdir=tests"
